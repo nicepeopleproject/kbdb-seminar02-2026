@@ -1,0 +1,85 @@
+erDiagram
+    %% Пример из лекции 2: расширенная схема компрессорной станции.
+    %% Не копируйте — у вашего объекта свои сущности. Подсмотреть синтаксис — можно.
+
+    station     ||--o{ unit          : "размещает"
+    unit_kind   ||--o{ unit          : "тип"
+    unit        ||--o{ sensor        : "несёт"
+    sensor_kind ||--o{ sensor        : "тип"
+    sensor      ||--o{ telemetry     : "измеряет"
+    unit        ||--o{ event         : "порождает"
+    severity    ||--o{ event         : "уровень"
+    unit        ||--o{ maintenance   : "обслуживается"
+    engineer    ||--o{ maintenance   : "выполняет"
+    maintenance ||--o{ maintenance_part : "расходует"
+    part        ||--o{ maintenance_part : "используется в"
+    unit        ||--o{ unit_location : "история размещения"
+    station     ||--o{ unit_location : ""
+
+    station {
+        int  id PK
+        text code UK
+        text name
+        text region
+    }
+    unit {
+        int  id PK
+        text code UK "K-2"
+        int  station_id FK "текущее размещение"
+        text kind FK
+        text model
+        date commissioned
+    }
+    sensor {
+        int  id PK
+        int  unit_id FK
+        text tag "уникален в пределах unit"
+        text kind FK
+        text unit_of_measure
+    }
+    telemetry {
+        timestamptz ts PK
+        int         sensor_id PK, FK
+        numeric     value
+    }
+    event {
+        int         id PK
+        int         unit_id FK
+        timestamptz ts
+        int         severity_id FK
+        text        message
+    }
+    severity {
+        int  id PK
+        text code UK "info | warning | alarm | unplanned_stop"
+        int  rank
+    }
+    maintenance {
+        int         id PK
+        int         unit_id FK
+        int         engineer_id FK
+        timestamptz performed_at
+        text        work_type
+        text        notes
+    }
+    maintenance_part {
+        int maintenance_id PK, FK
+        int part_id        PK, FK
+        int qty "check qty > 0"
+    }
+    part {
+        int  id PK
+        text code UK "6312"
+        text name
+    }
+    engineer {
+        int  id PK
+        text tab_no UK
+        text full_name
+    }
+    unit_location {
+        int         unit_id FK
+        int         station_id FK
+        timestamptz valid_from
+        timestamptz valid_to "NULL = действует сейчас"
+    }
